@@ -35,7 +35,8 @@ cart.get("/", (req, res) => {
       )
       .then((result) => {
         res.send(result.rows);
-      });
+      })
+      .catch(() => console.log("error"));
   }
   if (prefix) {
     const prefixCap = prefix.charAt(0).toUpperCase() + prefix.slice(1);
@@ -44,30 +45,39 @@ cart.get("/", (req, res) => {
       .query(`select * from shopping_cart where product like '${prefixCap}%'`)
       .then((result) => {
         res.send(result.rows);
-      });
+      })
+      .catch(() => console.log("error"));
   }
   if (pageSize) {
     pool
       .query(`select * from shopping_cart limit ${pageSize}`)
       .then((result) => {
         res.send(result.rows);
-      });
+      })
+      .catch(() => console.log("error"));
   } else {
-    pool.query("select * from shopping_cart").then((result) => {
-      res.send(result.rows);
-    });
+    pool
+      .query("select * from shopping_cart")
+      .then((result) => {
+        res.send(result.rows);
+      })
+      .catch(() => console.log("error"));
   }
 });
 
 cart.get("/:id", (req, res) => {
   const paramId = parseInt(req.params.id);
-  const cartDataForId = cartData.find((o) => o.id === paramId);
 
-  if (cartDataForId) {
-    res.status(200).send(cartDataForId);
-  } else {
-    res.status(404).send("ID Not Found");
-  }
+  pool
+    .query(`select * from shopping_cart where id=${paramId}`)
+    .then((result) => {
+      if (result.rows.length > 0) {
+        res.send(result.rows);
+      } else {
+        res.status(404).send("ID Not Found");
+      }
+    })
+    .catch(() => console.log("error"));
 });
 
 cart.post("/", (req, res) => {
